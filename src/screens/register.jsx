@@ -55,6 +55,7 @@ export default function Register({navigation}) {
         <View className="w-full space-y-1">
           <TextS className={'text-xs '}>Password</TextS>
           <IconTextInput
+            secureTextEntry={true}
             value={password}
             onChangeText={setPassword}
             placeholder={'Enter your Password'}

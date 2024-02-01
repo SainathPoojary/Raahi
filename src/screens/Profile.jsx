@@ -9,12 +9,44 @@ import {
 import ProfilePhoto from '../../assets/images/harshit.png';
 import {useNavigation} from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {useContext, useEffect, useState} from 'react';
+import firestore from '@react-native-firebase/firestore';
+import {AuthContext} from '../context/AuthProvider';
+import PostCard from '../components/PostCard';
 
 export default function Profile() {
+  const [posts, setPosts] = useState([]);
+  const {user} = useContext(AuthContext);
+  const [likes, setLikes] = useState(0);
   const navigation = useNavigation();
   const openHome = () => {
     navigation.navigate('nav');
   };
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      const _posts = await firestore()
+        .collection('posts')
+        .where('authorId', '==', user.uid)
+        .get();
+
+      const likes = _posts.docs.reduce((acc, doc) => {
+        acc +=
+          doc.data().costLikes ||
+          0 + doc.data().comforLikes ||
+          0 + doc.data().timeLikes ||
+          0;
+        return acc;
+      }, 0);
+
+      setLikes(likes);
+
+      setPosts(_posts.docs.map(doc => doc.data()));
+    };
+
+    fetchPosts();
+  }, []);
+
   return (
     <ScrollView contentContainerStyle={{alignItems: 'center'}} className="flex">
       <TouchableOpacity
@@ -29,19 +61,24 @@ export default function Profile() {
       <Text
         style={{fontFamily: 'Poppins-Medium'}}
         className="text-black mt-5 text-xl">
-        Kshitij Shetty
+        {user.displayName}
       </Text>
       <View className="h-14 w-52 mt-5 flex flex-row">
         <View className="h-full w-1/2 inline-flex items-center justify-center border-r border-gray-400">
-          <Text className="text-black text-xl text-center font-bold">1500</Text>
+          <Text className="text-black text-xl text-center font-bold">
+            {Math.round(likes / 2)}
+          </Text>
           <Text className="text-black text-sm text-center">Credits</Text>
         </View>
         <View className="h-full w-1/2 inline-flex items-center justify-center">
-          <Text className="text-black text-xl text-center font-bold">150k</Text>
+          <Text className="text-black text-xl text-center font-bold">
+            {likes}
+          </Text>
           <Text className="text-black text-sm text-center">Likes</Text>
         </View>
       </View>
       <TouchableOpacity
+        disabled={true}
         style={{
           height: 50,
           width: '90%',
@@ -57,15 +94,17 @@ export default function Profile() {
           Redeem Credits
         </Text>
       </TouchableOpacity>
-      <View className="w-[90%] mt-5 pb-5">
+      <View className="w-[90%] mt-5">
         <Text
           className="text-black text-3xl"
           style={{fontFamily: 'Poppins-Medium'}}>
           Posts
         </Text>
-        <View className="h-40 w-full bg-gray-400 mt-5"></View>
-        <View className="h-40 w-full bg-gray-400 mt-5"></View>
-        <View className="h-40 w-full bg-gray-400 mt-5"></View>
+      </View>
+      <View className="w-[90%] pb-5">
+        {posts.map(post => (
+          <PostCard key={post.id} data={post} saved={true} />
+        ))}
       </View>
     </ScrollView>
   );

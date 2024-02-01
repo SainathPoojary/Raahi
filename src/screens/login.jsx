@@ -6,6 +6,7 @@ import {
   Pressable,
   Text,
   ActivityIndicator,
+  ToastAndroid,
 } from 'react-native';
 import {AuthContext} from '../context/AuthProvider';
 import images from '../res/js/images';
@@ -27,6 +28,12 @@ export default function Login({navigation}) {
 
   const handleLogin = async () => {
     setLoading(true);
+    if (!email || !password) {
+      ToastAndroid.show('Please fill all the fields', ToastAndroid.SHORT);
+      setLoading(false);
+      return;
+    }
+
     try {
       await login(email, password);
     } catch (e) {

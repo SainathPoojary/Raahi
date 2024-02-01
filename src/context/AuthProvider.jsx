@@ -58,7 +58,10 @@ export const AuthProvider = ({children}) => {
           try {
             // field validations
             if (!name || !email || !password) {
-              Alert.alert('Please fill all the fields');
+              ToastAndroid.show(
+                'Please fill all the fields',
+                ToastAndroid.SHORT,
+              );
               return;
             }
 
